@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <iostream>
-#include <memory>
 
 // Умный указатель с уникальным владением (аналог std::unique_ptr)
 // T - тип управляемого объекта
@@ -150,3 +149,49 @@ public:
     // Деструктор
     ~MyUniquePtr();
 };
+
+
+template <class T, class D>
+T* MyUniquePtr<T[], D>::release() {
+    T* temp = ptr_;
+    ptr_ = nullptr;
+    return temp;
+}
+
+// Перемещающий конструктор
+template <class T, class D>
+MyUniquePtr<T[], D>::MyUniquePtr(MyUniquePtr&& other) noexcept
+    : ptr_(other.ptr_), deleter_(std::move(other.deleter_)) {
+    other.ptr_ = nullptr;
+}
+
+// Перемещающее присваивание
+template <class T, class D>
+MyUniquePtr<T[], D>& MyUniquePtr<T[], D>::operator=(MyUniquePtr&& other) noexcept {
+    if (this != &other) {
+        if (ptr_) {
+            deleter_(ptr_);
+        }
+        ptr_ = other.ptr_;
+        deleter_ = std::move(other.deleter_);
+        other.ptr_ = nullptr;
+    }
+    return *this;
+}
+
+// reset для массива
+template <class T, class D>
+void MyUniquePtr<T[], D>::reset(T* ptr) {
+    if (ptr_ && ptr_ != ptr) {
+        deleter_(ptr_);
+    }
+    ptr_ = ptr;
+}
+
+// Деструктор
+template <class T, class D>
+MyUniquePtr<T[], D>::~MyUniquePtr() {
+    if (ptr_) {
+        deleter_(ptr_);
+    }
+}

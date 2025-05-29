@@ -1,6 +1,6 @@
 ﻿#include <iostream>
 #include "unique_ptr.h"
-//#include "shared_ptr.h"
+#include "shared_ptr.h"
 using namespace std;
 /*
 Строки и умные указатели
@@ -10,7 +10,7 @@ using namespace std;
 
 */
 //#define UNIQUE
-#define SHARED
+//#define SHARED
 
 int main()
 {
@@ -59,11 +59,36 @@ int main()
 
 #endif // UNIQUE
 #ifdef SHARED
+    {
+        SharedPtr<Test> sp1(new Test());
+        cout << "sp1 use_count: " << sp1.use_count() << endl;
+        {
+            SharedPtr<Test> sp2 = sp1;
+            cout << "sp1 use_count after copy: " << sp1.use_count() << endl;
+            cout << "sp2 use_count: " << sp2.use_count() << endl;
+            sp2->hello();
+        }
+        cout << "sp1 use_count after exit: " << sp1.use_count() << endl;
+    }
 
+    {
+        SharedPtr<Test[]> arrSp(new Test[3]);
+        cout << "arrSp use_count: " << arrSp.use_count() << endl;
+        {
+            SharedPtr<Test[]> arrSp2 = arrSp;
+            cout << "arrSp use_count after copy: " << arrSp.use_count() << endl;
+            cout << "arrSp2 use_count: " << arrSp2.use_count() << endl;
+            for (int i = 0; i < 3; ++i) {
+                arrSp2[i].hello();
+            }
+        }
+        cout << "arrSp use_count: " << arrSp.use_count() << endl;
+    }
     
 
 
 
 #endif // SHARED
+    return 0;
 }
 
